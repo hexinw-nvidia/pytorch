@@ -625,6 +625,7 @@ class ProcessGroupNCCL(Backend):
     def uid(self) -> int: ...
     @property
     def options(self) -> Options: ...  # type: ignore[override]
+    def update_user_heartbeat_timeout(self, timeout_sec: int) -> None: ...
 
 class ProcessGroupUCC(Backend):
     def __init__(

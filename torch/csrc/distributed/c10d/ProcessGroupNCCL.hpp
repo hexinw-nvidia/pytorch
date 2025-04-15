@@ -857,6 +857,9 @@ class TORCH_API ProcessGroupNCCL : public Backend {
       const c10::intrusive_ptr<Work>& work,
       const std::chrono::milliseconds& timeout);
 
+  // Add method to update user heartbeat timeout. 'timeout' is in unit of seconds.
+  void updateUserHeartbeatTimeout(int timeoutInSec);
+
  protected:
   // Helper that broadcasts nccl unique ID to all ranks through the store
   void broadcastUniqueNCCLID(
@@ -1368,6 +1371,9 @@ class TORCH_API ProcessGroupNCCL : public Backend {
 
   // Communication-optimized memory pool associated with this PG
   std::unique_ptr<c10::cuda::MemPool> memPool_ = nullptr;
+
+  std::atomic<int> userHeartbeatTimeoutInSec_{0};
+  std::atomic<std::chrono::time_point<std::chrono::steady_clock>> lastUserHeartbeatTime_;
 };
 
 // Dumps the NCCL comm traces and additional information about the Process

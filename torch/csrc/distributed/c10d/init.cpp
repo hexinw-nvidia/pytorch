@@ -3140,7 +3140,21 @@ options :class:`~torch.distributed.ProcessGroupNCCL.Options`).
           .def(
               "get_error",
               &::c10d::ProcessGroupNCCL::getError,
-              py::call_guard<py::gil_scoped_release>());
+              py::call_guard<py::gil_scoped_release>())
+          .def(
+              "update_user_heartbeat_timeout",
+              &::c10d::ProcessGroupNCCL::updateUserHeartbeatTimeout,
+              py::arg("timeout_sec"),
+              py::call_guard<py::gil_scoped_release>(),
+              R"(
+                  Update the user heartbeat timeout value and reset the timer.
+
+                  Args:
+                      timeout_sec (int): The timeout value in seconds. Set to 0 to disable monitoring.
+
+                  This should be called periodically in the training loop to indicate progress.
+                  If not called within the timeout period, NCCL will dump debug information.
+              )");
 
   module.def(
       "_get_intra_node_comm_usage_counter",

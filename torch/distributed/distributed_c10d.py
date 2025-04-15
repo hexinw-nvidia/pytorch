@@ -129,6 +129,7 @@ __all__ = [
     "reduce_scatter_tensor",
     "get_node_local_rank",
     "split_group",
+    "update_user_heartbeat_timeout",
 ]
 
 _MPI_AVAILABLE = True
@@ -5581,3 +5582,36 @@ def _get_process_group_name(pg: ProcessGroup) -> str:
 
 def _get_process_group_store(pg: ProcessGroup) -> Store:
     return _world.pg_map[pg][1]
+
+
+def update_user_heartbeat_timeout(timeout_sec: int = 300) -> None:
+    """
+    Update the user heartbeat timeout for NCCL trace monitoring.
+
+    This function should be called periodically in the training loop to indicate the training
+    is making progress. If the time between two consecutive calls exceeds the timeout,
+    NCCL will dump the flight recorder trace to help diagnose potential hangs or deadlocks.
+
+    Args:
+        timeout_sec (int): The timeout value in seconds. Default is 300 (5 minutes).
+                          Set to 0 to disable the timeout.
+
+    Example::
+        >>> # Initialize process group
+        >>> torch.distributed.init_process_group('nccl')
+        >>>
+        >>> # In training loop
+        >>> for epoch in range(num_epochs):
+        ...     for batch in dataloader:
+        ...         # Update heartbeat before each iteration
+        ...         torch.distributed.update_user_heartbeat_timeout(10)
+        ...         # ... training code ...
+    """
+    pg = _get_default_group()
+    try:
+        backend = pg._get_backend(torch.device("cuda"))
+    except RuntimeError:
+        backend = None
+
+    if is_nccl_available() and isinstance(backend, ProcessGroupNCCL):
+        backend.update_user_heartbeat_timeout(timeout_sec)

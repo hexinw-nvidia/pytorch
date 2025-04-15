@@ -1779,6 +1779,30 @@ void ProcessGroupNCCL::heartbeatMonitor() {
           break;
         }
       }
+
+      // Check user heartbeat timeout if enabled
+      int userTimeout = userHeartbeatTimeoutInSec_.load();
+      if (userTimeout > 0) {
+        auto lastUserHeartbeat = lastUserHeartbeatTime_.load();
+        if (computeDeltaMS(lastUserHeartbeat, currentTime) >= userTimeout * 1000l) {
+          shouldDump_.store(true);
+          errorMsg = c10::str(
+              logPrefix(),
+              "User heartbeat timeout detected after ",
+              userTimeout,
+              " seconds without update. ",
+              "This indicates that either the training iteration is stuck ",
+              "or the user code is not calling torch.distributed.update_user_heartbeat_timeout() frequently enough. ",
+              "To resolve this, either:\n",
+              "1. Check if your training iteration is stuck in some operation\n",
+              "2. Call torch.distributed.update_user_heartbeat_timeout() more frequently\n",
+              "3. Adjust the timeout value when calling torch.distributed.update_user_heartbeat_timeout()\n",
+              "4. Disable user heartbeat monitoring by passing timeout=0");
+          exitReason = "user heartbeat timeout";
+          break;
+        }
+      }
+
     }
 
     if (computeDeltaMS(lastTimeHeartBeatCheck, currentTime) >=
@@ -5545,6 +5569,12 @@ at::Tensor ProcessGroupNCCL::allocateTensor(
   LOG(INFO) << logPrefix() << "Allocated tensor of size " << size
             << " from memory pool";
   return tensor;
+}
+
+void ProcessGroupNCCL::updateUserHeartbeatTimeout(int timeoutInSec) {
+  userHeartbeatTimeoutInSec_.store(timeoutInSec);
+  // Reset the last heartbeat time when timeout is updated
+  lastUserHeartbeatTime_.store(std::chrono::steady_clock::now());
 }
 
 } // namespace c10d
