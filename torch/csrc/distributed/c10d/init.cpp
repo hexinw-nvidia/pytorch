@@ -3153,7 +3153,7 @@ options :class:`~torch.distributed.ProcessGroupNCCL.Options`).
                       timeout_sec (int): The timeout value in seconds. Set to 0 to disable monitoring.
 
                   This should be called periodically in the training loop to indicate progress.
-                  If not called within the timeout period, NCCL will dump debug information.
+                  If not called within the timeout period, PyTorch will dump debug information.
               )");
 
   module.def(

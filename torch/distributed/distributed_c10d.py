@@ -5590,7 +5590,7 @@ def update_user_heartbeat_timeout(timeout_sec: int = 300) -> None:
 
     This function should be called periodically in the training loop to indicate the training
     is making progress. If the time between two consecutive calls exceeds the timeout,
-    NCCL will dump the flight recorder trace to help diagnose potential hangs or deadlocks.
+    PyTorch will dump the flight recorder trace to help diagnose potential hangs or deadlocks.
 
     Args:
         timeout_sec (int): The timeout value in seconds. Default is 300 (5 minutes).
