@@ -760,6 +760,8 @@ class TORCH_API ProcessGroupNCCL : public Backend {
       int srcRank,
       int tag) override;
 
+  int64_t getCommPtr();
+
   void groupStart();
 
   void groupEnd();
@@ -859,6 +861,8 @@ class TORCH_API ProcessGroupNCCL : public Backend {
 
   // Add method to update user heartbeat timeout. 'timeout' is in unit of seconds.
   void updateUserHeartbeatTimeout(int timeoutInSec);
+
+  void setEnableNanCheck(bool enableNanCheck);
 
  protected:
   // Helper that broadcasts nccl unique ID to all ranks through the store
