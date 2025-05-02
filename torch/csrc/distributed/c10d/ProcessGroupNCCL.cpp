@@ -1980,7 +1980,7 @@ void ProcessGroupNCCL::ncclCommWatchdog() {
           e.what());
       LOG(ERROR) << exitMsg;
       if (C10_LIKELY(rethrowCUDAErrors_) ||
-          !(std::string(e.what()).find("CUDA Error"))) {
+          std::string(e.what()).find("CUDA error") == std::string::npos) {
         // TODO(whc) clean up the rethrow - why is it stored in a class var and
         // rethrown?
         watchDogException_ =
