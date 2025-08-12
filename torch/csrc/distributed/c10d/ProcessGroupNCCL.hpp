@@ -126,6 +126,10 @@ static std::vector<std::string> TORCH_NCCL_COORD_CHECK_MILSEC = {
 static std::vector<std::string> TORCH_NCCL_LOG_CPP_STACK_ON_UNCLEAN_SHUTDOWN = {
     "TORCH_NCCL_LOG_CPP_STACK_ON_UNCLEAN_SHUTDOWN"};
 
+// Whether to dump stack traces during flight recorder dump (default true)
+static std::vector<std::string> TORCH_NCCL_DUMP_STACK_TRACE = {
+    "TORCH_NCCL_DUMP_STACK_TRACE"};
+
 // Control whether to use CudaEventCache for the collective in watchdog thread.
 // We noticed in the past when cuda global lock is held, destroying CudaEvent
 // can cause a hang.
@@ -663,6 +667,9 @@ class TORCH_API ProcessGroupNCCL : public Backend {
     // Whether or not to dump debug info on exception including both watchdog
     // timeout and nccl errors.
     bool dumpOnTimeoutOrEx_;
+
+    // Whether or not to dump stack traces during flight recorder dump.
+    bool dumpStackTrace_;
 
     // Mutex to Guard monitorWakeUpCV_
     std::mutex monitorMutex_;

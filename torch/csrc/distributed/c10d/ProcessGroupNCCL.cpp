@@ -1662,6 +1662,9 @@ ProcessGroupNCCL::HeartbeatMonitor::HeartbeatMonitor(ProcessGroupNCCL* pg) {
   // logging C++ stack isn't safe. Gate it with an ENV.
   logCppStackOnUncleanShutdown_ =
       getCvarBool(TORCH_NCCL_LOG_CPP_STACK_ON_UNCLEAN_SHUTDOWN, true);
+  // Whether to dump stack traces during flight recorder dump
+  dumpStackTrace_ =
+      getCvarBool(TORCH_NCCL_DUMP_STACK_TRACE, true);
   watchdogHeartbeatMonitorEnabled_ =
       getCvarBool(TORCH_NCCL_ENABLE_MONITORING, true);
 
@@ -1675,7 +1678,8 @@ ProcessGroupNCCL::HeartbeatMonitor::HeartbeatMonitor(ProcessGroupNCCL* pg) {
       << ", TORCH_NCCL_HEARTBEAT_TIMEOUT_SEC: " << heartbeatTimeoutInSec_
       << ", TORCH_NCCL_COORD_CHECK_MILSEC: " << coordCheckIntervalMilSec_
       << ", TORCH_NCCL_LOG_CPP_STACK_ON_UNCLEAN_SHUTDOWN: "
-      << logCppStackOnUncleanShutdown_;
+      << logCppStackOnUncleanShutdown_
+      << ", TORCH_NCCL_DUMP_STACK_TRACE: " << dumpStackTrace_;
 }
 
 void ProcessGroupNCCL::HeartbeatMonitor::stop() {
@@ -1867,7 +1871,7 @@ void ProcessGroupNCCL::HeartbeatMonitor::runLoop() {
   if (checkDumpSignal && shouldDump_.load()) {
     // Store debug info to storage if no other thread does it. (By default to
     // local disk)
-    bool dumpStackTrace = true;
+    bool dumpStackTrace = dumpStackTrace_;
     ::c10d::C10dLoggingData debugLog;
     debugLog.integers["pg_id"] = static_cast<int64_t>(pg_->getUid());
     debugLog.integers["rank"] = pg_->getRank();
